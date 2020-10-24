@@ -1,9 +1,14 @@
 #@Christian Aeberhard
 import csv
+import matplotlib.pyplot as plt
+import itertools
 
 
 def calculatePrecision(c,r):
-    return abs(c) / abs(r)
+    try:
+        return abs(c) / abs(r)
+    except (ZeroDivisionError):
+        pass
 
 def calculateRecall(c,t):
     return abs(c) / abs(t)
@@ -53,27 +58,47 @@ for x in falsePositiveContainer:
 
 
 for i in falsePositiveContainer:
-    retrieved += 1
+    #retrieved += 1
     if(i[3] == "1"):
         totalCorrect += 1
     #print(i)
-
 #Adjust to change precision and recall
 
 for iteration in range(0,1410):
     correct = 0
+    retrieved = iteration
+    sentinal = 0
     for r in range(0,iteration):
         if(falsePositiveContainer[r][3] == "1"):
             correct += 1
-    precisionRecallContainer.append([calculatePrecision(correct, retrieved),calculateRecall(correct, totalCorrect)])
+
+    if(iteration != 0):
+        if(calculatePrecision(correct, retrieved) != precisionRecallContainer[sentinal-1][0] and
+        calculateRecall(correct, totalCorrect) != precisionRecallContainer[sentinal-1][1] and
+        str(calculateRecall(correct, totalCorrect))[::-1].find('.') == 1):
+            precisionRecallContainer.append([calculatePrecision(correct, retrieved),
+                                             calculateRecall(correct, totalCorrect)])
+            sentinal += 1
+
+    else:
+        precisionRecallContainer.append(
+            [calculatePrecision(correct, retrieved), calculateRecall(correct, totalCorrect)])
+        sentinal += 1
     #print("precision: " + str(calculatePrecision(correct, retrieved)))
     #print("recall: " + str(calculateRecall(correct, totalCorrect)))
 
 
-
+def extract_key(v):
+    return v[0]
 
 #Precision, Recall
-for n in precisionRecallContainer:
+precisionContainer = []
+recallContainer = []
+tempContainer = precisionRecallContainer
+
+for n in tempContainer:
+    precisionContainer.append(n[0])
+    recallContainer.append((n[1]))
     print(n)
 
 print("correct: " + str(correct))
@@ -82,6 +107,14 @@ print("retrieved: " + str(retrieved))
 
 #print("precision: " + str(calculatePrecision(correct,retrieved)))
 #print("recall: " + str(calculateRecall(correct,totalCorrect)))
+
+
+plt.plot(recallContainer,precisionContainer, linestyle = '-', marker = 'o', color = "b")
+plt.ylabel('precision')
+plt.xlabel('recall')
+plt.ylim(0,1)
+
+plt.show()
 
 
 

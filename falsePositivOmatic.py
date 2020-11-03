@@ -4,15 +4,15 @@ import matplotlib.pyplot as plt
 import itertools
 
 
-def calculatePrecision(c,r):
+
+def calculatePrecision(c, r):
     try:
         return abs(c) / abs(r)
-    except (ZeroDivisionError):
+    except ZeroDivisionError:
         pass
 
 def calculateRecall(c,t):
     return abs(c) / abs(t)
-
 
 
 oracleContainer = []
@@ -28,6 +28,7 @@ retrieved = 0
 correct = 0
 totalCorrect = 0
 
+
 #Prepare and Slice Oracle Data and store it in an 2D Array
 for line in oracle2Data:
     lineSplit = line.split(",")
@@ -41,7 +42,7 @@ for line in listNData:
         lineSplit = line.split(",")
         try:
             falsePositiveContainer.append([lineSplit[0][0:-4],lineSplit[1][0:-4],lineSplit[2][0:-1]])
-        except (IndexError):
+        except IndexError:
             pass
     counter += 1
 
@@ -54,42 +55,48 @@ for i in falsePositiveContainer:
             i[3] = "1"
 newFile = csv.writer(open ("FalsePositiveData.csv","w"), delimiter =",", lineterminator = '\n')
 for x in falsePositiveContainer:
-    newFile.writerow (x)
+    newFile.writerow(x)
 
 
 for i in falsePositiveContainer:
     #retrieved += 1
-    if(i[3] == "1"):
+    if i[3] == "1":
         totalCorrect += 1
     #print(i)
 #Adjust to change precision and recall
 
-for iteration in range(0,1410):
+for iteration in range(0, 1410):
     correct = 0
     retrieved = iteration
-    sentinal = 0
-    for r in range(0,iteration):
-        if(falsePositiveContainer[r][3] == "1"):
+    sentinel = 0
+    if(iteration==0):
+        if falsePositiveContainer[0][3] == "1":
+            correct += 1
+
+    for r in range(0, iteration):
+        if falsePositiveContainer[r][3] == "1":
             correct += 1
 
     if(iteration != 0):
-        if(calculatePrecision(correct, retrieved) != precisionRecallContainer[sentinal-1][0] and
-        calculateRecall(correct, totalCorrect) != precisionRecallContainer[sentinal-1][1] and
+        if(calculatePrecision(correct, retrieved) != precisionRecallContainer[sentinel-1][0] and
+        calculateRecall(correct, totalCorrect) != precisionRecallContainer[sentinel-1][1] and
         str(calculateRecall(correct, totalCorrect))[::-1].find('.') == 1):
             precisionRecallContainer.append([calculatePrecision(correct, retrieved),
                                              calculateRecall(correct, totalCorrect)])
-            sentinal += 1
+            sentinel += 1
 
     else:
+        print("correct: " + str(correct) + " " + "retrieved: " + str(retrieved))
         precisionRecallContainer.append(
-            [calculatePrecision(correct, retrieved), calculateRecall(correct, totalCorrect)])
-        sentinal += 1
+            [calculatePrecision(correct, retrieved + 1), calculateRecall(correct, totalCorrect)])
+        sentinel += 1
     #print("precision: " + str(calculatePrecision(correct, retrieved)))
     #print("recall: " + str(calculateRecall(correct, totalCorrect)))
 
 
 def extract_key(v):
     return v[0]
+
 
 #Precision, Recall
 precisionContainer = []
@@ -109,10 +116,17 @@ print("retrieved: " + str(retrieved))
 #print("recall: " + str(calculateRecall(correct,totalCorrect)))
 
 
-plt.plot(recallContainer,precisionContainer, linestyle = '-', marker = 'o', color = "b")
+plt.plot(recallContainer,precisionContainer, linestyle='-', marker='X', color="b",
+         markerfacecolor="red", markersize=9)
 plt.ylabel('precision')
 plt.xlabel('recall')
-plt.ylim(0,1)
+plt.ylim(0, 1.1)
+plt.xticks([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+plt.yticks([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+plt.gca().spines['right'].set_color('none')
+plt.gca().spines['top'].set_color('none')
+plt.title("Precision Recall Graph HS20")
+
 
 plt.show()
 
